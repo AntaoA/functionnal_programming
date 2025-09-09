@@ -74,6 +74,26 @@ def create_scientist_processors():
 
     return dict_processors
 
+def analyze_basic_scientists(scientists: List[Scientist]) -> Dict:
+    """
+    Use map, filter, reduce to analyze scientists.
+    Return a dictionary with:
+    - 'nobel_winners': filtered scientists with Nobel prizes
+    - 'total_birth_years': sum of all birth years
+    - 'avg_birth_year': average birth year
+    - 'scientist_names': list of all scientist names (uppercase)
+
+    Use lambda functions where appropriate.
+    """
+    dict_processors = create_scientist_processors()
+    dict_analysis = {
+        'nobel_winners': list(filter(dict_processors['is_nobel_winner'], scientists)),
+        'total_birth_years': reduce(lambda acc, scientist: acc + scientist.birth_year, scientists, 0),
+        'avg_birth_year': reduce(lambda acc, scientist: acc + scientist.birth_year, scientists, 0) / len(scientists) if scientists else 0,
+        'scientist_names': list(map(lambda scientist: scientist.name.upper(), scientists))
+    }
+
+    return dict_analysis
 
 
 if __name__ == "__main__":
@@ -84,3 +104,9 @@ if __name__ == "__main__":
         print(f"  Is Female: {processors['is_female'](scientist)}")
         print(f"  Field Prefix: {processors['field_prefix'](scientist)}")
         print(f"  Formatted: {processors['format_scientist'](scientist)}")
+    analysis = analyze_basic_scientists(sample_scientists)
+    print("\nAnalysis of Scientists:")
+    print(f"  Nobel Winners: {[s.name for s in analysis['nobel_winners']]}")
+    print(f"  Total Birth Years: {analysis['total_birth_years']}")
+    print(f"  Average Birth Year: {analysis['avg_birth_year']}")
+    print(f"  Scientist Names: {analysis['scientist_names']}")
