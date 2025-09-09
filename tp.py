@@ -197,6 +197,35 @@ def create_research_analyzer(impact_threshold: float):
     return analyze_research_database
 
 
+def create_scientist_filter_factory():
+    """
+    Create a factory function that returns customized filter functions.
+    Uses closures to create specialized filters.
+    """
+
+    def create_era_filter(start_year: int, end_year: int):
+        """Inner function that creates an era-based filter"""
+        # TODO: Return a function that filters scientists by birth year range
+        return lambda scientist: start_year <= scientist.birth_year <= end_year
+
+    def create_nationality_filter(nationalities: frozenset):
+        """Inner function that creates a nationality-based filter"""
+        # TODO: Return a function that filters scientists by nationalities
+        return lambda scientist: scientist.nationality in nationalities
+
+    def create_field_group_filter(field_groups: Dict[str, frozenset]):
+        """Inner function that creates field group filters"""
+        # Example: {'STEM': frozenset(['Physics', 'Chemistry', 'Biology','Mathematics'])}
+        # TODO: Return a function that filters by field groups
+        return lambda scientist: any(scientist.field in fields for fields in field_groups.values())
+
+    return {
+    'era_filter': create_era_filter,
+    'nationality_filter': create_nationality_filter,
+    'field_group_filter': create_field_group_filter
+    }
+
+
 if __name__ == "__main__":
 
     processors = create_scientist_processors()
@@ -237,3 +266,18 @@ if __name__ == "__main__":
         print(f"    Average Birth Year: {research.avg_birth_year}")
         print(f"    Nobel Winners: {research.nobel_winners}")
         print(f"    Top Publications: {[pub.title for pub in research.top_publications]}")
+        
+    filter_factory = create_scientist_filter_factory()
+    era_filter = filter_factory['era_filter'](1900, 1915)
+    nationality_filter = filter_factory['nationality_filter'](frozenset(['American', 'British']))
+    field_group_filter = filter_factory['field_group_filter']({'STEM': frozenset(['Physics', 'Mathematics'])})
+
+    print("\nFiltered Scientists (Born 1900-1915):")
+    for scientist in filter(era_filter, sample_scientists):
+        print(f"  {scientist.name} ({scientist.birth_year})")
+    print("\nFiltered Scientists (American or British):")
+    for scientist in filter(nationality_filter, sample_scientists):
+        print(f"  {scientist.name} ({scientist.nationality})")
+    print("\nFiltered Scientists (Mathematics or Physics):")
+    for scientist in filter(field_group_filter, sample_scientists):
+        print(f"  {scientist.name} ({scientist.field})")
