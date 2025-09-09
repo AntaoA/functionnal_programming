@@ -122,6 +122,81 @@ def get_field_statistics(scientists: List[Scientist]) -> Dict[str, Dict]:
     return dict_field_stats
 
 
+
+def create_research_analyzer(impact_threshold: float):
+    """
+    Create a research analyzer using inner functions and closures.
+    Returns a function that can analyze scientists and publications.
+    """
+
+    def analyze_research_database(scientists: List[Scientist], publications: List[Publication]) -> Database:
+        """
+        Inner function that analyzes scientists and publications to create database.
+        Should categorize research and identify patterns.
+        """
+
+        def calculate_field_research(scientists: List[Scientist]) -> List[Research]:
+            """
+            Nested inner function to calculate research metrics per field.
+            Group scientists by field and calculate:
+            - Total scientists in field
+            - Average birth year
+            - Number of Nobel winners
+            - High-impact publications in field
+            """
+            # TODO: Implement research calculation
+            dict_field_stats = get_field_statistics(scientists)
+            list_research = []
+
+            for field, stats in dict_field_stats.items():
+
+                top_publications = filter_high_impact_research(list(filter(lambda pub: any(scientist.name == pub.author and scientist.field == field for scientist in scientists), publications)))
+                research = Research(
+                    field=field,
+                    total_scientists=stats['scientist_count'],
+                    avg_birth_year=stats['avg_birth_year'],
+                    nobel_winners=stats['nobel_count'],
+                    top_publications=top_publications
+                )
+                list_research.append(research)
+            return list_research
+
+
+           
+
+
+        def filter_high_impact_research(publications: List[Publication]) -> List[Publication]:
+            """
+            Nested inner function using the closure's impact_threshold.
+            Filter publications that exceed the impact threshold.
+            Score = citations * field impact score
+            """
+            # TODO: Use impact_threshold from closure
+            list_high_impact = []
+            for pub in publications:
+                for scientist in scientists:
+                    if pub.author == scientist.name:
+                        field_score = research_impact_scores.get(scientist.field, 0)
+                        impact_score = pub.citations * field_score
+                        if impact_score >= impact_threshold:
+                            list_high_impact.append(pub)
+            return list_high_impact
+        
+        
+            
+        # TODO: Use inner functions to build database
+        research_areas = calculate_field_research(scientists)
+        high_impact_publications = filter_high_impact_research(publications)
+        database = Database(
+            scientists=scientists,
+            publications=high_impact_publications,
+            research_areas=research_areas
+        )
+        return database
+        
+    return analyze_research_database
+
+
 if __name__ == "__main__":
 
     processors = create_scientist_processors()
@@ -150,3 +225,15 @@ if __name__ == "__main__":
         print(f"    Nobel Count: {stats['nobel_count']}")
         print(f"    Average Birth Year: {stats['avg_birth_year']}")
         print(f"    Nobel Percentage: {stats['nobel_percentage']}%")    
+        
+    research_analyzer = create_research_analyzer(impact_threshold=25000)
+    database = research_analyzer(sample_scientists, sample_publications)
+    print("\nResearch Database:")
+    print(f"  Total Scientists: {len(database.scientists)}")
+    print(f"  High Impact Publications: {[pub.title for pub in database.publications]}")
+    for research in database.research_areas:
+        print(f"  Research Field: {research.field}")
+        print(f"    Total Scientists: {research.total_scientists}")
+        print(f"    Average Birth Year: {research.avg_birth_year}")
+        print(f"    Nobel Winners: {research.nobel_winners}")
+        print(f"    Top Publications: {[pub.title for pub in research.top_publications]}")
