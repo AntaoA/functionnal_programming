@@ -96,17 +96,57 @@ def analyze_basic_scientists(scientists: List[Scientist]) -> Dict:
     return dict_analysis
 
 
+def get_field_statistics(scientists: List[Scientist]) -> Dict[str, Dict]:
+    """
+    Create statistics per field using functional programming.
+    Return dict where keys are fields and values are dicts with:
+    - 'scientist_count': number of scientists in field
+    - 'nobel_count': number of Nobel winners in field
+    - 'avg_birth_year': average birth year in field
+    - 'nobel_percentage': percentage who won Nobel prizes
+
+    Use map, filter, reduce paradigm.
+    """
+    all_fields = set(map(lambda scientist: scientist.field, scientists))
+    dict_field_stats = {}
+    for field in all_fields:
+        scientists_in_field = list(filter(lambda scientist: scientist.field == field, scientists))
+        dict_analysis_filed = analyze_basic_scientists(scientists_in_field)
+        
+        dict_field_stats[field] = {
+            'scientist_count': len(scientists_in_field),
+            'nobel_count': len(dict_analysis_filed['nobel_winners']),
+            'avg_birth_year': dict_analysis_filed['avg_birth_year'],
+            'nobel_percentage': (len(dict_analysis_filed['nobel_winners']) / len(scientists_in_field) * 100) if scientists_in_field else 0
+        }
+    return dict_field_stats
+
+
 if __name__ == "__main__":
+
     processors = create_scientist_processors()
+
     for scientist in sample_scientists:
         print(f"Scientist: {scientist.name}")
         print(f"  Is Nobel Winner: {processors['is_nobel_winner'](scientist)}")
         print(f"  Is Female: {processors['is_female'](scientist)}")
         print(f"  Field Prefix: {processors['field_prefix'](scientist)}")
         print(f"  Formatted: {processors['format_scientist'](scientist)}")
+
     analysis = analyze_basic_scientists(sample_scientists)
+
     print("\nAnalysis of Scientists:")
     print(f"  Nobel Winners: {[s.name for s in analysis['nobel_winners']]}")
     print(f"  Total Birth Years: {analysis['total_birth_years']}")
     print(f"  Average Birth Year: {analysis['avg_birth_year']}")
     print(f"  Scientist Names: {analysis['scientist_names']}")
+    
+    field_stats = get_field_statistics(sample_scientists)
+    
+    print("\nField Statistics:")
+    for field, stats in field_stats.items():
+        print(f"  Field: {field}")
+        print(f"    Scientist Count: {stats['scientist_count']}")
+        print(f"    Nobel Count: {stats['nobel_count']}")
+        print(f"    Average Birth Year: {stats['avg_birth_year']}")
+        print(f"    Nobel Percentage: {stats['nobel_percentage']}%")    
