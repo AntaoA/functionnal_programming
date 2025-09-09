@@ -250,13 +250,19 @@ def create_scientific_report_generator():
             """Create executive summary using map-filter-reduce only"""
             # TODO: Create high-level statistics
             # Include: total scientists, fields covered, Nobel winners, time span, etc.
-            pass
+            dict_summary = {
+                'total_scientists': len(scientists),
+                'fields_covered': list(set(map(lambda s: s.field, scientists))),
+                'nobel_winners': len(list(filter(lambda s: s.nobel_prize is not None, scientists))),
+                'time_span': (min(map(lambda s: s.birth_year, scientists)), max(map(lambda s: s.birth_year, scientists))) if scientists else (None, None)
+            }
+            return dict_summary
 
         def create_field_analysis(scientists: List[Scientist], publications: List[Publication]) -> Dict[str, Dict]:
             """Create detailed field analysis using functional methods"""
             # TODO: Analyze each field comprehensively
             # Include: scientist count, publication impact, Nobel rate, etc.
-            pass
+            return get_field_statistics(scientists)
 
         def create_collaboration_networks(publications: List[Publication]) -> Dict:
             """Create collaboration network analysis using pure functions"""
@@ -275,8 +281,7 @@ def create_scientific_ranking_system():
     Create a ranking system for scientists using functional programming.
     """
 
-    ScientistRanking = namedtuple('ScientistRanking', ['scientist', 'score',
-    'rank', 'category'])
+    ScientistRanking = namedtuple('ScientistRanking', ['scientist', 'score', 'rank', 'category'])
 
     def rank_scientists_by_impact(scientists: List[Scientist], publications: List[Publication]) -> List[ScientistRanking]:
         """
@@ -286,15 +291,47 @@ def create_scientific_ranking_system():
         def calculate_base_score(scientist: Scientist) -> float:
             """Calculate base impact score using functional approach"""
             # TODO: Score based on Nobel prizes, field impact, era, etc.
-            pass
+            score = 0
+            if scientist.nobel_prize:
+                score += 1000
+            field_score = research_impact_scores.get(scientist.field, 0)
+            score += field_score * 10
+            current_year = datetime.now().year
+            age = current_year - scientist.birth_year
+            score += max(0, (150 - age))
+            
 
         def categorize_scientist(scientist: Scientist, score: float) -> str:
             """Categorize scientist based on score"""
             # TODO: Create categories like 'Legendary', 'Pioneering', 'Influential', etc.
-            pass
+            if score >= 1200:
+                return 'Legendary'
+            elif score >= 800:
+                return 'Pioneering'
+            elif score >= 400:
+                return 'Influential'
+            else:
+                return 'Notable'
 
         # TODO: Combine all scoring functions to create final rankings
-        pass
+        ranked_scientists = sorted(
+            [
+                ScientistRanking(
+                    scientist=scientist,
+                    score=calculate_base_score(scientist),
+                    rank=0,  # Placeholder, will set later
+                    category=categorize_scientist(scientist, calculate_base_score(scientist))
+                )
+                for scientist in scientists
+            ],
+            key=lambda sr: sr.score,
+            reverse=True
+        )
+        
+        for idx, sr in enumerate(ranked_scientists):
+            ranked_scientists[idx] = sr._replace(rank=idx + 1)
+
+        return ranked_scientists
 
     return rank_scientists_by_impact
 
